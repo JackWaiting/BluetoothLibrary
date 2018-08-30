@@ -46,14 +46,14 @@ public class BluetoothChatSppService {
     private int connectionFailedCount = 0;
     private BluetoothSocket mmSocket;
 
-    public boolean isConnected(){
-        if(mmSocket != null){
+    public boolean isConnected() {
+        if (mmSocket != null) {
             return mmSocket.isConnected() && mState == ConnectionState.SPP_CONNECTED;
         }
         return false;
     }
 
-    public void initConnectionFailedCount(){
+    public void initConnectionFailedCount() {
         connectionFailedCount = 0;
     }
 
@@ -69,7 +69,7 @@ public class BluetoothChatSppService {
         onConnectionListener = listener;
     }
 
-    public BluetoothDevice getCurrentConnectedDevice(){
+    public BluetoothDevice getCurrentConnectedDevice() {
         return mConnectDevice;
     }
 
@@ -238,8 +238,8 @@ public class BluetoothChatSppService {
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
     private void connectionFailed(BluetoothDevice bluetoothDevice) {
-        if(connectionFailedCount < 3){
-            connectionFailedCount ++;
+        if (connectionFailedCount < 3) {
+            connectionFailedCount++;
 
         }
         setState(ConnectionState.SPP_FAILURE, bluetoothDevice);
@@ -317,7 +317,7 @@ public class BluetoothChatSppService {
         public void cancel() {
             if (D) Log.d(TAG, "cancel " + this);
             try {
-                if(mmServerSocket != null){
+                if (mmServerSocket != null) {
                     mmServerSocket.close();
                 }
             } catch (IOException e) {
@@ -337,7 +337,7 @@ public class BluetoothChatSppService {
         private BluetoothDevice mmDevice;
 
         public ConnectThread(BluetoothDevice device) {
-            if(device != null){
+            if (device != null) {
                 mmDevice = device;
                 BluetoothSocket tmp = null;
 
@@ -364,14 +364,14 @@ public class BluetoothChatSppService {
             try {
                 // This is a blocking call and will only return on a
                 // successful connection or an exception
-                if(mmSocket != null){
+                if (mmSocket != null) {
                     mmSocket.connect();
                 }
             } catch (IOException e) {
                 connectionFailed(mmDevice);
                 // Close the socket
                 try {
-                    if(mmSocket != null) {
+                    if (mmSocket != null) {
                         mmSocket.close();
                     }
                 } catch (IOException e2) {
@@ -393,7 +393,7 @@ public class BluetoothChatSppService {
 
         public void cancel() {
             try {
-                if(mmSocket != null){
+                if (mmSocket != null) {
                     mmSocket.close();
                 }
             } catch (IOException e) {
@@ -408,26 +408,28 @@ public class BluetoothChatSppService {
      */
     private class ConnectedThread extends Thread {
 
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
+        private InputStream mmInStream;
+        private OutputStream mmOutStream;
 
         public ConnectedThread(BluetoothSocket socket) {
-            Log.d(TAG, "create ConnectedThread");
-            mmSocket = socket;
+            if (socket != null) {
+                Log.d(TAG, "create ConnectedThread");
+                mmSocket = socket;
 
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
+                InputStream tmpIn = null;
+                OutputStream tmpOut = null;
 
-            // Get the BluetoothSocket input and output streams
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-                Log.e(TAG, "temp sockets not created", e);
+                // Get the BluetoothSocket input and output streams
+                try {
+                    tmpIn = socket.getInputStream();
+                    tmpOut = socket.getOutputStream();
+                } catch (IOException e) {
+                    Log.e(TAG, "temp sockets not created", e);
+                }
+
+                mmInStream = tmpIn;
+                mmOutStream = tmpOut;
             }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
         }
 
         public void run() {
@@ -439,13 +441,15 @@ public class BluetoothChatSppService {
             while (true) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+                    if(mmInStream != null){
+                        bytes = mmInStream.read(buffer);
+                    }
                     LogManager.debug("Device sends command to App", "BluetoothChat original command:",
                             BluetoothDeviceCommandManager.byte2HexStr(buffer));
-                    if(BluetoothDeviceCommandManager.isCommandValid(buffer)
-                            && BluetoothDeviceCommandManager.isHeadCommandToButtonRadioValid(buffer) == BluetoothDeviceCommandProtocol.DeviceType.BUTTON_RADIO){
+                    if (BluetoothDeviceCommandManager.isCommandValid(buffer)
+                            && BluetoothDeviceCommandManager.isHeadCommandToButtonRadioValid(buffer) == BluetoothDeviceCommandProtocol.DeviceType.BUTTON_RADIO) {
                         BluetoothDeviceCommandResolver.parse(buffer);
-                    }else{
+                    } else {
                         LogManager.e("设备发送命令为无效命令");
                     }
 
@@ -454,7 +458,9 @@ public class BluetoothChatSppService {
                     Log.e(TAG, "disconnected", e);
                     connectionLost(mmSocket.getRemoteDevice());
                     try {
-                        mmSocket.close();
+                        if(mmSocket != null){
+                            mmSocket.close();
+                        }
                     } catch (IOException e2) {
                         Log.e(TAG, "unable to close() socket during connection failure", e2);
                     }
@@ -471,10 +477,12 @@ public class BluetoothChatSppService {
          */
         public void write(byte[] buffer) {
             try {
-                mmOutStream.write(buffer);
+                if(mmOutStream != null){
+                    mmOutStream.write(buffer);
+                    LogManager.debug("APP sends command to Device", "original command:",
+                            buffer);
+                }
 
-                LogManager.debug("APP sends command to Device", "original command:",
-                        buffer);
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);
             }
@@ -482,7 +490,7 @@ public class BluetoothChatSppService {
 
         public void cancel() {
             try {
-                if(mmSocket != null){
+                if (mmSocket != null) {
                     mmSocket.close();
                 }
             } catch (IOException e) {
