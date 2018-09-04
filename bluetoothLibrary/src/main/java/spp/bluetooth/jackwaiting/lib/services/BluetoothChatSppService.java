@@ -441,8 +441,8 @@ public class BluetoothChatSppService {
             while (true) {
                 try {
                     // Read from the InputStream
-                    if(mmInStream != null){
-                        bytes = mmInStream.read(buffer);
+                    if (null != mmInStream) {
+                        mmInStream.read(buffer);
                     }
                     LogManager.debug("Device sends command to App", "BluetoothChat original command:",
                             BluetoothDeviceCommandManager.byte2HexStr(buffer));
@@ -458,7 +458,7 @@ public class BluetoothChatSppService {
                     Log.e(TAG, "disconnected", e);
                     connectionLost(mmSocket.getRemoteDevice());
                     try {
-                        if(mmSocket != null){
+                        if (mmSocket != null) {
                             mmSocket.close();
                         }
                     } catch (IOException e2) {
@@ -466,7 +466,10 @@ public class BluetoothChatSppService {
                     }
                     stopSpp();
                     break;
+                }catch (Exception ignored){
+                    Log.e(TAG, "出现异常");
                 }
+
             }
         }
 
@@ -477,7 +480,7 @@ public class BluetoothChatSppService {
          */
         public void write(byte[] buffer) {
             try {
-                if(mmOutStream != null){
+                if (mmOutStream != null) {
                     mmOutStream.write(buffer);
                     LogManager.debug("APP sends command to Device", "original command:",
                             buffer);
