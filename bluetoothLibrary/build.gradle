@@ -4,9 +4,9 @@ apply plugin: 'com.novoda.bintray-release'
 //./gradlew clean build bintrayUpload -PbintrayUser=jackwaiting -PbintrayKey= a34081342aa4b8555c497a6f4db6ce18fdf9af6c -PdryRun=false
 publish {
     userOrg = 'jackwaiting'//bintray.com用户名
-    groupId = 'com.bluetooth.jackwiting.lib'//jcenter上的路径
+    groupId = 'com.bluetooth.jackwaiting.lib'//jcenter上的路径
     artifactId = 'bluetoothlibrary'//项目名称
-    publishVersion = '1.1.6'//版本号
+    publishVersion = '1.1.7'//版本号
     desc = 'this is for bluetoothlibrary'//描述，不重要
     website = 'https://github.com/JackWaiting/BluetoothLibrary'//网站，最好有，不重要
     bintrayUser = 'jackwaiting'
